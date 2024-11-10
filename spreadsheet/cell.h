@@ -76,6 +76,6 @@ private:
     SheetInterface& sheet_;
     std::unordered_set<Cell*> referenced_cells_, dependent_cells_;
     
-    void CheckCircularDependencies(const std::vector<Position>& referenced_cells_pos);
+    bool HasCircularDependencies(const std::vector<Position>& referenced_cells_pos);
     void UpdateDependencies(std::vector<Position>& referenced_cells_pos);
 };

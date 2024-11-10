@@ -21,7 +21,9 @@ void Cell::Set(std::string text) {
         const Impl& formula = *temp_impl;
         auto referensed_cells_pos = formula.GetReferencedCells();
         if (!referensed_cells_pos.empty()) {
-            CheckCircularDependencies(referensed_cells_pos);
+            if (HasCircularDependencies(referensed_cells_pos)) {
+                throw CircularDependencyException("Circular dependency detected");
+            }
         }
         InvalidateCache();
         UpdateDependencies(referensed_cells_pos);
@@ -50,7 +52,7 @@ bool Cell::HasCache() const {
     return impl_->HasCache();
 }
 
-void Cell::CheckCircularDependencies(const std::vector<Position>& referenced_cells_pos) {
+bool Cell::HasCircularDependencies(const std::vector<Position>& referenced_cells_pos) {
     std::unordered_set<const Cell*> referenced_cells;
     for (const auto& pos : referenced_cells_pos) {
         referenced_cells.insert(dynamic_cast<Cell*>(sheet_.GetCell(pos)));
@@ -71,9 +73,11 @@ void Cell::CheckCircularDependencies(const std::vector<Position>& referenced_cel
                 }
             }            
         } else {
-            throw CircularDependencyException("Circular dependency detected");
+            return true;
         }
     }
+
+    return false;
 }
 
 void Cell::InvalidateCache() {
